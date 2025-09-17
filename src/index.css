@@ -2,41 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* TwinSec Studio - Cybersecurity OT Platform Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Dark cybersecurity theme */
+    --background: 210 17% 6%;
+    --foreground: 213 31% 91%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 210 17% 8%;
+    --card-foreground: 213 31% 91%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 210 17% 8%;
+    --popover-foreground: 213 31% 91%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Cyber blue */
+    --primary: 200 100% 50%;
+    --primary-foreground: 210 17% 6%;
+    --primary-glow: 200 100% 70%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: Dark panels */
+    --secondary: 210 17% 12%;
+    --secondary-foreground: 213 31% 91%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 17% 10%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent: Electric green for success/safe states */
+    --accent: 142 76% 36%;
+    --accent-foreground: 213 31% 91%;
+    --accent-bright: 142 76% 56%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Warning: Amber for alerts */
+    --warning: 45 93% 58%;
+    --warning-foreground: 210 17% 6%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Critical/Attack: Red for threats */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 213 31% 91%;
+    --critical: 0 100% 50%;
 
-    --radius: 0.5rem;
+    --border: 210 17% 16%;
+    --input: 210 17% 12%;
+    --ring: 200 100% 50%;
+
+    --radius: 0.75rem;
+
+    /* Industrial/OT specific colors */
+    --industrial-orange: 24 100% 50%;
+    --sensor-green: 120 100% 40%;
+    --actuator-blue: 240 100% 60%;
+    --alarm-red: 0 100% 50%;
+
+    /* Gradients */
+    --gradient-cyber: linear-gradient(135deg, hsl(200 100% 50%), hsl(240 100% 60%));
+    --gradient-alert: linear-gradient(135deg, hsl(0 100% 50%), hsl(24 100% 50%));
+    --gradient-safe: linear-gradient(135deg, hsl(142 76% 36%), hsl(120 100% 40%));
+    --gradient-panel: linear-gradient(180deg, hsl(210 17% 10%), hsl(210 17% 8%));
+
+    /* Shadows */
+    --shadow-cyber: 0 0 20px hsl(200 100% 50% / 0.3);
+    --shadow-panel: 0 4px 20px hsl(210 17% 2% / 0.5);
+    --shadow-critical: 0 0 15px hsl(0 100% 50% / 0.4);
+
+    /* Typography */
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +130,89 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    background-image: 
+      radial-gradient(circle at 20% 80%, hsl(200 100% 50% / 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(240 100% 60% / 0.05) 0%, transparent 50%);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+
+  /* Typography */
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* Utility classes */
+  .gradient-cyber {
+    background: var(--gradient-cyber);
+  }
+
+  .gradient-alert {
+    background: var(--gradient-alert);
+  }
+
+  .gradient-safe {
+    background: var(--gradient-safe);
+  }
+
+  .gradient-panel {
+    background: var(--gradient-panel);
+  }
+
+  .shadow-cyber {
+    box-shadow: var(--shadow-cyber);
+  }
+
+  .shadow-panel {
+    box-shadow: var(--shadow-panel);
+  }
+
+  .shadow-critical {
+    box-shadow: var(--shadow-critical);
+  }
+
+  /* Animation classes */
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-glow {
+    from {
+      box-shadow: 0 0 5px hsl(var(--primary) / 0.5);
+    }
+    to {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.8);
+    }
+  }
+
+  .animate-danger-pulse {
+    animation: danger-pulse 1s ease-in-out infinite alternate;
+  }
+
+  @keyframes danger-pulse {
+    from {
+      box-shadow: 0 0 5px hsl(var(--destructive) / 0.5);
+    }
+    to {
+      box-shadow: 0 0 15px hsl(var(--destructive) / 0.9);
+    }
   }
 }
