@@ -1,7 +1,10 @@
-import { Shield, Zap, Activity } from "lucide-react";
+import { Shield, Zap, Activity, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Header() {
+  const { user, signOut } = useAuth();
+  
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm">
       <div className="container mx-auto px-6 py-4">
@@ -32,6 +35,16 @@ export function Header() {
               <Zap className="h-4 w-4 mr-2" />
               Connect SIEM
             </Button>
+            
+            {user && (
+              <div className="flex items-center gap-3 ml-4 pl-4 border-l border-border">
+                <span className="text-sm text-muted-foreground">{user.email}</span>
+                <Button variant="outline" size="sm" onClick={() => signOut()}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

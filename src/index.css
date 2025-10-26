@@ -215,4 +215,12 @@
       box-shadow: 0 0 15px hsl(var(--destructive) / 0.9);
     }
   }
+
+  /* Grid pattern for auth pages */
+  .bg-grid {
+    background-image: 
+      linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
 }
