@@ -1,17 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Database, 
   Play, 
   Settings, 
-  Shield, 
   Network,
   Activity,
   Gauge,
-  AlertTriangle
+  Edit2,
+  Save
 } from "lucide-react";
+import { useState } from "react";
 
 interface ModelData {
   name: string;
@@ -19,11 +21,13 @@ interface ModelData {
   components: Array<{
     id: string;
     kind: string;
+    label?: string;
     params: Record<string, any>;
   }>;
   connections: Array<{
     from: string;
     to: string;
+    label?: string;
     signal?: string;
   }>;
   signals: {
@@ -39,6 +43,7 @@ interface ModelData {
     widgets: Array<{
       kind: string;
       bind: string;
+      label?: string;
     }>;
   };
 }
@@ -49,13 +54,16 @@ interface ModelViewerProps {
 }
 
 export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
+  const [editingComponent, setEditingComponent] = useState<string | null>(null);
+  const [editedParams, setEditedParams] = useState<Record<string, any>>({});
+
   if (!model) {
     return (
       <Card className="shadow-panel border-border/50 h-full flex items-center justify-center">
         <CardContent className="text-center text-muted-foreground">
           <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>No model generated yet</p>
-          <p className="text-sm">Use the prompt editor to create a digital twin</p>
+          <p>No se ha generado ningún modelo aún</p>
+          <p className="text-sm">Usa el editor de prompt para crear un gemelo digital</p>
         </CardContent>
       </Card>
     );
@@ -83,6 +91,35 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
     }
   };
 
+  const getReadableParamName = (key: string): string => {
+    const names: Record<string, string> = {
+      area: "Área",
+      h0: "Nivel Inicial",
+      hmax: "Nivel Máximo",
+      Kv: "Coef. Válvula",
+      position: "Posición",
+      noise: "Ruido",
+      range: "Rango",
+      unit: "Unidad"
+    };
+    return names[key] || key;
+  };
+
+  const handleEditComponent = (componentId: string, params: Record<string, any>) => {
+    setEditingComponent(componentId);
+    setEditedParams({ ...params });
+  };
+
+  const handleSaveParams = (componentId: string) => {
+    // In a real implementation, this would update the model
+    console.log("Guardando parámetros para", componentId, editedParams);
+    setEditingComponent(null);
+  };
+
+  const handleParamChange = (key: string, value: any) => {
+    setEditedParams(prev => ({ ...prev, [key]: value }));
+  };
+
   return (
     <div className="space-y-6">
       {/* Model Header */}
@@ -98,7 +135,7 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
                 </Badge>
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Solver: {model.solver.method} | dt: {model.solver.dt}s
+                Método: {model.solver.method} | dt: {model.solver.dt}s
               </p>
             </div>
             <Button 
@@ -106,7 +143,7 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
               className="gradient-safe text-white hover:shadow-cyber"
             >
               <Play className="h-4 w-4 mr-2" />
-              Start Simulation
+              Iniciar Simulación
             </Button>
           </div>
         </CardHeader>
@@ -117,30 +154,69 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Settings className="h-5 w-5 text-accent" />
-            <span>Components ({model.components.length})</span>
+            <span>Componentes ({model.components.length})</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {model.components.map((component, index) => (
+            {model.components.map((component) => (
               <div 
-                key={index}
-                className="p-4 rounded-lg bg-secondary/50 border border-border/30"
+                key={component.id}
+                className="p-4 rounded-lg bg-secondary/50 border border-border/30 hover:border-border/60 transition-colors"
               >
-                <div className="flex items-center space-x-3 mb-2">
-                  <span className="text-2xl">{getComponentIcon(component.kind)}</span>
-                  <div>
-                    <p className="font-medium text-sm">{component.id}</p>
-                    <p className="text-xs text-muted-foreground">{component.kind}</p>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  {Object.entries(component.params).map(([key, value]) => (
-                    <div key={key} className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">{key}:</span>
-                      <span className="font-mono">{String(value)}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">{getComponentIcon(component.kind)}</span>
+                    <div>
+                      <p className="font-semibold text-sm">{component.label || component.id}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{component.id}</p>
                     </div>
-                  ))}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => 
+                      editingComponent === component.id 
+                        ? handleSaveParams(component.id)
+                        : handleEditComponent(component.id, component.params)
+                    }
+                  >
+                    {editingComponent === component.id ? (
+                      <Save className="h-4 w-4 text-primary" />
+                    ) : (
+                      <Edit2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                
+                <Badge variant="outline" className="text-xs mb-3">
+                  {component.kind}
+                </Badge>
+
+                <div className="space-y-2">
+                  {Object.entries(editingComponent === component.id ? editedParams : component.params)
+                    .filter(([key]) => key !== 'unit')
+                    .map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between gap-2">
+                        <Label className="text-xs font-medium text-muted-foreground min-w-[100px]">
+                          {getReadableParamName(key)}:
+                        </Label>
+                        {editingComponent === component.id ? (
+                          <Input
+                            type="text"
+                            value={Array.isArray(value) ? JSON.stringify(value) : value}
+                            onChange={(e) => handleParamChange(key, e.target.value)}
+                            className="h-8 text-xs font-mono flex-1"
+                          />
+                        ) : (
+                          <span className="font-mono text-xs text-right flex-1">
+                            {Array.isArray(value) ? JSON.stringify(value) : value}
+                            {component.params.unit && ` ${component.params.unit}`}
+                          </span>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </div>
             ))}
@@ -153,7 +229,7 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Network className="h-5 w-5 text-primary" />
-            <span>Signal Connections ({model.connections.length})</span>
+            <span>Conexiones de Señales ({model.connections.length})</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -161,15 +237,15 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
             {model.connections.map((connection, index) => (
               <div 
                 key={index}
-                className="flex items-center space-x-3 p-2 rounded bg-muted/30 text-sm font-mono"
+                className="p-3 rounded bg-muted/30 space-y-1"
               >
-                <span className="text-sensor-green">{connection.from}</span>
-                <span className="text-muted-foreground">→</span>
-                <span className="text-actuator-blue">{connection.to}</span>
-                {connection.signal && (
-                  <Badge variant="outline" className="text-xs">
-                    {connection.signal}
-                  </Badge>
+                <div className="flex items-center space-x-3 text-sm font-mono">
+                  <span className="text-sensor-green">{connection.from}</span>
+                  <span className="text-muted-foreground">→</span>
+                  <span className="text-actuator-blue">{connection.to}</span>
+                </div>
+                {connection.label && (
+                  <p className="text-xs text-muted-foreground">{connection.label}</p>
                 )}
               </div>
             ))}
@@ -183,13 +259,13 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Activity className="h-5 w-5 text-warning" />
-              <span>Signals</span>
+              <span>Señales</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {model.signals.outputs && (
               <div>
-                <p className="text-sm font-medium mb-2">Outputs:</p>
+                <p className="text-sm font-medium mb-2">Salidas:</p>
                 <div className="space-y-1">
                   {model.signals.outputs.map((signal, index) => (
                     <div key={index} className="text-xs font-mono bg-muted/30 p-1 rounded">
@@ -201,7 +277,7 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
             )}
             {model.signals.inputs && (
               <div>
-                <p className="text-sm font-medium mb-2">Inputs:</p>
+                <p className="text-sm font-medium mb-2">Entradas:</p>
                 <div className="space-y-1">
                   {model.signals.inputs.map((signal, index) => (
                     <div key={index} className="text-xs font-mono bg-muted/30 p-1 rounded">
@@ -219,7 +295,7 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Gauge className="h-5 w-5 text-industrial-orange" />
-                <span>HMI Widgets</span>
+                <span>Widgets HMI</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -227,12 +303,17 @@ export function ModelViewer({ model, onStartSimulation }: ModelViewerProps) {
                 {model.hmi.widgets.map((widget, index) => (
                   <div 
                     key={index}
-                    className="flex items-center justify-between p-2 rounded bg-muted/30 text-sm"
+                    className="p-2 rounded bg-muted/30 space-y-1"
                   >
-                    <span className="font-mono">{widget.bind}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {widget.kind}
-                    </Badge>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-mono text-xs">{widget.bind}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {widget.kind}
+                      </Badge>
+                    </div>
+                    {widget.label && (
+                      <p className="text-xs text-muted-foreground">{widget.label}</p>
+                    )}
                   </div>
                 ))}
               </div>

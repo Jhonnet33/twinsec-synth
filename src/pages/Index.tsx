@@ -32,46 +32,67 @@ const Index = () => {
       
       // Mock model response for tank system
       const mockModel = {
-        name: "tank_system_demo",
+        name: "Sistema de Tanque Industrial",
         type: "tank",
         solver: { method: "euler", dt: 0.1 },
         components: [
           {
-            id: "T1",
-            kind: "tank", 
-            params: { area: 1.2, h0: 0.5, hmax: 2.0 }
+            id: "tanque_principal",
+            kind: "tank",
+            label: "Tanque Principal",
+            params: { 
+              area: 1.2, 
+              h0: 0.5, 
+              hmax: 2.0,
+              unit: "m"
+            }
           },
           {
-            id: "V_in",
+            id: "valvula_entrada",
             kind: "valve",
-            params: { Kv: 1.1, position: 0.8 }
+            label: "Válvula de Entrada",
+            params: { 
+              Kv: 1.1, 
+              position: 0.8,
+              unit: "m³/h"
+            }
           },
           {
-            id: "V_out", 
+            id: "valvula_salida", 
             kind: "valve",
-            params: { Kv: 0.9, position: 0.6 }
+            label: "Válvula de Salida",
+            params: { 
+              Kv: 0.9, 
+              position: 0.6,
+              unit: "m³/h"
+            }
           },
           {
-            id: "L_sens",
+            id: "sensor_nivel",
             kind: "sensor_level",
-            params: { noise: 0.005, range: [0, 2] }
+            label: "Sensor de Nivel",
+            params: { 
+              noise: 0.005, 
+              range: [0, 2],
+              unit: "m"
+            }
           }
         ],
         connections: [
-          { from: "V_in.q", to: "T1.q_in" },
-          { from: "T1.h", to: "V_out.h_up" },
-          { from: "T1.h", to: "L_sens.y" }
+          { from: "valvula_entrada.q", to: "tanque_principal.q_in", label: "Flujo de entrada" },
+          { from: "tanque_principal.h", to: "valvula_salida.h_up", label: "Presión de salida" },
+          { from: "tanque_principal.h", to: "sensor_nivel.y", label: "Medición de nivel" }
         ],
         signals: {
-          outputs: ["T1.h", "V_in.q", "V_out.q"],
-          inputs: ["V_in.setpoint", "V_out.setpoint"]
+          outputs: ["tanque_principal.h", "valvula_entrada.q", "valvula_salida.q"],
+          inputs: ["valvula_entrada.setpoint", "valvula_salida.setpoint"]
         },
         hmi: {
           widgets: [
-            { kind: "plot", bind: "T1.h" },
-            { kind: "gauge", bind: "V_in.q" },
-            { kind: "gauge", bind: "V_out.q" },
-            { kind: "alarm", bind: "T1.h" }
+            { kind: "plot", bind: "tanque_principal.h", label: "Nivel del Tanque" },
+            { kind: "gauge", bind: "valvula_entrada.q", label: "Caudal de Entrada" },
+            { kind: "gauge", bind: "valvula_salida.q", label: "Caudal de Salida" },
+            { kind: "alarm", bind: "tanque_principal.h", label: "Alarma de Nivel" }
           ]
         }
       };
